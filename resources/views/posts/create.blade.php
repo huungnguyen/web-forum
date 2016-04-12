@@ -22,10 +22,11 @@ Add New Post
 	<div class="form-group">
 		<select name="category" class="form-control" required="required">
 			<option value="" disabled selected hidden>Select your category</option>
-			<option value="category1">category1</option>
-			<option value="category2">category2</option>
-			<option value="category3">category3</option>
-			<option value="category4">category4</option>
+			@if($categories->count())
+				@foreach($categories as $category)
+					<option value="{{$category->name}}">{{$category->name}}</option>
+				@endforeach
+			@endif
 		</select>
 	</div>
 	<div class="form-group">

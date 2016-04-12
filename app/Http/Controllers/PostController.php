@@ -23,12 +23,12 @@ class PostController extends Controller {
 	{
 		$posts = Posts::join('users','users.id','=','posts.author_id')->where('posts.active','1')->orderBy('posts.created_at','desc')->paginate(10);
 		$title = 'Latest Posts';
-		$category=Categories::get();
+		$categories=Categories::get();
 		if(Auth::user()) {
 			$notifications = Notifications::join('posts', 'posts.id', '=', 'notifications.on_post')->where('posts.author_id', Auth::user()->id)->where('notifications.status', 'no')->get();
-			return view('home')->withPosts($posts)->withTitle($title)->with('category', $category)->withNotifications($notifications);
+			return view('home')->withPosts($posts)->withTitle($title)->with('categories', $categories)->withNotifications($notifications);
 		}else
-			return view('home')->withPosts($posts)->withTitle($title)->with('category', $category);
+			return view('home')->withPosts($posts)->withTitle($title)->with('categories', $categories);
 	}
 
 	/**
@@ -43,7 +43,8 @@ class PostController extends Controller {
 		{
 			if(Auth::user()) {
 				$notifications = Notifications::join('posts', 'posts.id', '=', 'notifications.on_post')->where('posts.author_id', Auth::user()->id)->where('notifications.status', 'no')->get();
-				return view('posts.create')->withNotifications($notifications);
+				$categories=Categories::get();
+				return view('posts.create')->withNotifications($notifications)->withCategories($categories);
 			}
 			return view('posts.create');
 		}	
@@ -121,13 +122,14 @@ class PostController extends Controller {
 	{
 		$post = Posts::where('slug',$slug)->first();
 		$notifications = Notifications::join('posts', 'posts.id', '=', 'notifications.on_post')->where('posts.author_id', Auth::user()->id)->where('notifications.status', 'no')->get();
+		$categories=Categories::get();
 		if($post && ($request->user()->id == $post->author_id || $request->user()->is_admin())) {
 
-			return view('posts.edit')->with('post', $post)->withNotifications($notifications);
+			return view('posts.edit')->with('post', $post)->withNotifications($notifications)->withCategories($categories);
 		}
 		else 
 		{
-			return redirect('/')->withErrors('you have not sufficient permissions')->withNotifications($notifications);
+			return redirect('/')->withErrors('you have not sufficient permissions')->withNotifications($notifications)->withCategories($categories);
 		}
 	}
 
@@ -187,7 +189,7 @@ class PostController extends Controller {
 	public function destroy(Request $request, $id)
 	{
 		//
-		$notifications=Notifications::where('id_user',Auth::user()->id)->where('status','no')->get();
+		$notifications = Notifications::join('posts', 'posts.id', '=', 'notifications.on_post')->where('posts.author_id', Auth::user()->id)->where('notifications.status', 'no')->get();
 		$post = Posts::find($id);
 		if($post && ($post->author_id == $request->user()->id || $request->user()->is_admin()))
 		{
@@ -203,5 +205,12 @@ class PostController extends Controller {
 	}
 	public function test(){
 		return "ok";
+	}
+	public function category_posts($name)
+	{
+		$notifications = Notifications::join('posts', 'posts.id', '=', 'notifications.on_post')->where('posts.author_id', Auth::user()->id)->where('notifications.status', 'no')->get();
+		$posts = Posts::where('category', $name)->paginate(5);
+		$title = $name;
+		return view('posts.show_category')->withPosts($posts)->withTitle($title)->withNotifications($notifications);
 	}
 }

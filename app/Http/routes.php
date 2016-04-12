@@ -62,4 +62,8 @@ Route::get('user/{id}/posts','UserController@user_posts')->where('id', '[0-9]+')
 
 // display single post
 Route::get('/{slug}',['as' => 'post', 'uses' => 'PostController@show'])->where('slug', '[A-Za-z0-9-_]+');
+
 Route::post('notification_onclick','NotificationController@onclick');
+
+// display category of post
+Route::get('/category/{name}', 'PostController@category_posts')->where('name', '[A-Za-z0-9-_]+');
